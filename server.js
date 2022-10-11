@@ -1,28 +1,43 @@
 //todo: require variables
-const express = require('express');
-// Import and require mysql2
+//const express = require('express');
+
 const mysql = require('mysql2');
+
+const inquirer = require('inquirer');
+
+const cTable = require('console.table'); 
+
+require('dotenv').config();
 
 const PORT = process.env.PORT || 3001;
 const app = express();
 
-// Express middleware
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
+// // Express middleware
+// app.use(express.urlencoded({ extended: false }));
+// app.use(express.json());
 
 // Connect to database
 const db = mysql.createConnection(
   {
     host: 'localhost',
+  
     // MySQL username,
     user: 'root',
     // MySQL password
-    password: '',
-    database: 'classlist_db'
+    password: process.env.MYSQL_PASSWORD,
+    database: 'employee_db'
   },
-  console.log(`Connected to the classlist_db database.`)
+
 );
 
+//todo: connect to database
+
+connection.connect((err) => {
+    if (err) throw err;
+    else {
+        prompts();
+    }
+})
 
 const prompts = () => {
     inquirer.prompt ([
@@ -30,19 +45,64 @@ const prompts = () => {
             type: 'list',
             name: 'choices',
             message: 'What would you like to do?',
-            choices: ['View All Employees', 'Add Employee', 'Update Employee Role', 'View All Roles', 'Add Role', 'View All Departments', 'Add Department']  
+            choices: ['view all departments', 'view all roles', 'view all employees', 'add a department', 'add a role', 'add an employee', 'update an employee role']
         },
 
     ]).then((answers) => {
         const { choices } = answers;
-        if (choices === 'View All Employees') {
+        if (choices === 'view all departments') {
+            departments();
+        if (choices === 'view all roles') {
+            viewAllRoles();
+        } 
+        if (choices === 'view all employees') {
+            viewAllRoles();
+        } 
+        if ( choices === 'view all employees') {
             employees();
+        }
+        if (choices === 'add a department') {
+            addDepartment();
+        } 
+        if (choices === 'add a role') {
+            addRole();
+        }
+        if (choices === 'add an employee') {
+            addEmployee();
+        }
+        if (choices === 'update an employee role') {
+            updateRole();
+        }
         }
     })
 }
 
+//todo: add view all departments function
+departments = () => {
+    const sql =    `SELECT department.id AS id, department.name AS department FROM department`;
+
+    connection.promise().query(sql, (err, rows) => {
+        if (err) throw err;
+        prompts();
+    })
+}
+
+//todo: add view all roles function
+viewAllRoles = () => {
+    const sql = `SELECT role.id, role.title, department.name AS department 
+    FROM role
+    INNER JOIN department ON role.department_id = department.id`;
+
+connection.promise().query(sql, (err, rows) => {
+    if (err) throw err;
+    console.table(rows);
+    prompts();
+})
+
+
+
+//todo: employees function
 employees = () => {
-    console.log('Viewing All Employees');
     const sql = `SELECT employee.id,
     employee.first_name,
     employee.last_name,
@@ -50,5 +110,113 @@ employees = () => {
     department.name AS department,
     role.salary,
     CONCAT (manager.first_name, ' ', manager.last_name) AS manager 
-    FROM employee`
+    FROM employee
+    LEFT JOIN role ON employee.role_id = role.id
+    LEFT JOIN department ON role.department_id = department.id
+    LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+
+    connection.promise().query(sql, (err, rows) => {
+        if (err) throw err;
+        console.table(rows);
+        prompts();
+    })
+}
+
+//todo: add add a department
+addDepartment = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'addDep',
+            message: 'What is the name of the department?',
+            
+        }
+    ]).then(answer => {
+        const sql = `INSERT INTO department (name) VALUES (?)`;
+        connection.query(sql, answer.addDep, (err, result) => {
+            if (err) throw (err);
+            console.log('Added ' + answer.addDep + ' to the database');
+            
+            departments();
+        })
+    })
+
+}
+//todo: add add role function
+addRole = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'role',
+            message: 'What is the name of the role?',
+        },
+        {
+            type: 'input',
+            name: 'salary',
+            message: 'What is the salary of the role?',
+        },
+        {
+            type: 'list',
+            name: 'department',
+            message: 'Which department does the role belong to?',
+            choices: ['Engineering', 'Finance', 'Legal', 'Sales', 'Service']
+        }
+    ]).then(answer => {
+        const roleSalary = [answer.role, answer.salary];
+
+        const roleSql = `SELECT name, id FROM department`;
+
+        connection.promise().query(roleSql, (err, data) => {
+            if (err) throw err;
+
+            
+
+        })
+    })
+
+}
+//todo: add add employee function
+
+addEmployee = () => {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'firstName',
+            message: `What is the employee's first name?`,
+        },
+        {
+            type: 'input',
+            name: 'lastName',
+            message: `What is the employee's last name?`,
+        },
+        {
+            type: 'list',
+            name: 'role',
+            message: `What is the employee's role?`,
+            choices: ['Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer', 'Customer Service', 'Sales Lead', 'Salesperson', 'Lead Engineer'],
+        },
+        {
+            type: 'list',
+            name: 'manager',
+            message:   `Who is the employees manager?`,
+            choices: []
+        }
+
+    ])
+}
+
+//todo: add update employee role function
+updateRole = () => {
+
+}
+
+
+//default response
+app.use((req, res) => {
+    res.status(404).end();
+  });
+  
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
 }
