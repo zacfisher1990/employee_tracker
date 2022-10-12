@@ -18,7 +18,7 @@ const db = mysql.createConnection(
     // MySQL username,
     user: 'root',
     // MySQL password
-    password: process.env.MYSQL_PASSWORD,
+    password: process.env.DB_PASSWORD,
     database: 'employee_db'
   },
 
@@ -26,14 +26,14 @@ const db = mysql.createConnection(
 
 //todo: connect to database
 
-db.connect((err) => {
+    db.connect((err) => {
     if (err) throw err;
     else {
         prompts();
     }
 })
 
-const prompts = () => {
+ prompts = () => {
     inquirer.prompt ([
         {
             type: 'list',
@@ -46,6 +46,7 @@ const prompts = () => {
         const { choices } = answers;
         if (choices === 'view all departments') {
             departments();
+        }
         if (choices === 'view all roles') {
             viewAllRoles();
         } 
@@ -67,7 +68,6 @@ const prompts = () => {
         if (choices === 'update an employee role') {
             updateRole();
         }
-        }
     })
 }
 
@@ -75,9 +75,10 @@ const prompts = () => {
 departments = () => {
     const sql = `SELECT department.id AS id, department.name AS department FROM department`;
 
-    connection.promise().query(sql, (err, rows) => {
+        db.query(sql, (err, rows) => {
         if (err) throw err;
         console.table(rows);
+        
         prompts();
     })
 };
@@ -87,7 +88,7 @@ departments = () => {
 viewAllRoles = () => {
     const sql = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id`;
 
-connection.promise().query(sql, (err, rows) => {
+    db.query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
     prompts();
@@ -110,7 +111,7 @@ employees = () => {
     LEFT JOIN department ON role.department_id = department.id
     LEFT JOIN employee manager ON employee.manager_id = manager.id`;
 
-    connection.promise().query(sql, (err, rows) => {
+        db.query(sql, (err, rows) => {
         if (err) throw err;
         console.table(rows);
         prompts();
@@ -128,7 +129,7 @@ addDepartment = () => {
         }
     ]).then(answer => {
         const sql = `INSERT INTO department (name) VALUES (?)`;
-        connection.query(sql, answer.addDep, (err, result) => {
+            db.query(sql, answer.addDep, (err, result) => {
             if (err) throw (err);
             console.log('Added ' + answer.addDep + ' to the database');
             
@@ -161,7 +162,7 @@ addRole = () => {
 
         const roleSql = `SELECT name, id FROM department`;
 
-        connection.promise().query(roleSql, (err, data) => {
+            db.query(roleSql, (err, data) => {
             if (err) throw err;
 
             
