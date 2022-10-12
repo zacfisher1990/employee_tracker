@@ -1,5 +1,4 @@
 //todo: require variables
-//const express = require('express');
 
 const mysql = require('mysql2');
 
@@ -10,13 +9,8 @@ const cTable = require('console.table');
 require('dotenv').config();
 
 const PORT = process.env.PORT || 3001;
-const app = express();
 
-// // Express middleware
-// app.use(express.urlencoded({ extended: false }));
-// app.use(express.json());
 
-// Connect to database
 const db = mysql.createConnection(
   {
     host: 'localhost',
@@ -32,7 +26,7 @@ const db = mysql.createConnection(
 
 //todo: connect to database
 
-connection.connect((err) => {
+db.connect((err) => {
     if (err) throw err;
     else {
         prompts();
@@ -213,11 +207,11 @@ updateRole = () => {
 
 
 //default response
-app.use((req, res) => {
-    res.status(404).end();
-  });
+// app.use((req, res) => {
+//     res.status(404).end();
+//   });
   
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+//   app.listen(PORT, () => {
+//     console.log(`Server running on port ${PORT}`);
+//   });
 
