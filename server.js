@@ -77,27 +77,28 @@ const prompts = () => {
     })
 }
 
-//todo: add view all departments function
+//view all departments function
 departments = () => {
-    const sql =    `SELECT department.id AS id, department.name AS department FROM department`;
+    const sql = `SELECT department.id AS id, department.name AS department FROM department`;
 
     connection.promise().query(sql, (err, rows) => {
         if (err) throw err;
+        console.table(rows);
         prompts();
     })
-}
+};
 
-//todo: add view all roles function
+//view all roles function
+
 viewAllRoles = () => {
-    const sql = `SELECT role.id, role.title, department.name AS department 
-    FROM role
-    INNER JOIN department ON role.department_id = department.id`;
+    const sql = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id`;
 
 connection.promise().query(sql, (err, rows) => {
     if (err) throw err;
     console.table(rows);
     prompts();
-})
+    })
+};
 
 
 
@@ -219,4 +220,4 @@ app.use((req, res) => {
   app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
   });
-}
+
