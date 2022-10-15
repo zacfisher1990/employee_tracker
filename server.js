@@ -1,4 +1,4 @@
-//todo: require variables
+//require variables
 
 const mysql = require('mysql2');
 
@@ -24,7 +24,7 @@ const db = mysql.createConnection(
 
 );
 
-//todo: connect to database
+// connect to database
 
     db.connect((err) => {
     if (err) throw err;
@@ -101,19 +101,16 @@ viewAllRoles = () => {
 
 
 
-//todo: employees function
+// View all employees function
+
 employees = () => {
-    const sql = `SELECT employee.id,
-    employee.first_name,
-    employee.last_name,
-    role.title,
-    department.name AS department,
-    role.salary,
-    CONCAT (manager.first_name, ' ', manager.last_name) AS manager 
-    FROM employee
-    LEFT JOIN role ON employee.role_id = role.id
-    LEFT JOIN department ON role.department_id = department.id
-    LEFT JOIN employee manager ON employee.manager_id = manager.id`;
+    const sql = `SELECT employee.id, employee.first_name, employee.last_name, role.title, 
+                department.name AS department, role.salary,
+                CONCAT (manager.first_name, ' ', manager.last_name) AS manager 
+                FROM employee
+                LEFT JOIN role ON employee.role_id = role.id
+                LEFT JOIN department ON role.department_id = department.id
+                LEFT JOIN employee manager ON employee.manager_id = manager.id`;
 
         db.query(sql, (err, rows) => {
         if (err) throw err;
@@ -142,7 +139,7 @@ addDepartment = () => {
     })
 };
 
-//todo: add add role function
+// Add Role function
 addRole = () => {
     inquirer.prompt([
         {
@@ -179,9 +176,9 @@ addRole = () => {
 
                 db.query(sql, roleSalary, (err, result) => {
                     if (err) throw err;
-                    console.log('Added' + answer.role + ' to roles');
+                    console.log('Added ' + answer.role + ' to the database');
 
-                    viewAllRoles();
+                    prompts();
                 })
                 
             })
@@ -190,9 +187,10 @@ addRole = () => {
 };
 
 
-//todo: add add employee function
+//Add employee function
 
 addEmployee = () => {
+    //employee name prompts
     inquirer.prompt([
         {
             type: 'input',
@@ -203,22 +201,62 @@ addEmployee = () => {
             type: 'input',
             name: 'lastName',
             message: `What is the employee's last name?`,
-        },
-        {
-            type: 'list',
-            name: 'role',
-            message: `What is the employee's role?`,
-            choices: ['Account Manager', 'Accountant', 'Legal Team Lead', 'Lawyer', 'Customer Service', 'Sales Lead', 'Salesperson', 'Lead Engineer'],
-        },
-        {
-            type: 'list',
-            name: 'manager',
-            message:   `Who is the employees manager?`,
-            choices: []
         }
+        
+    ]).then(answer => {
+        const firstLastName = [answer.firstName, answer.lastName]
 
-    ])
-}
+        const roleSql = `SELECT role.id, role.title FROM role`;
+
+        db.query(roleSql, (err, data) => {
+            if (err) throw err;
+
+            let roles = data.map(({ id, title }) => ({ name: title, value: id }));
+
+            inquirer.prompt([
+                {
+                    type: 'list',
+                    name: 'role',
+                    message: `What is the employee's role?`,
+                    choices: roles
+                }
+            ]).then(rolesAnswer => {
+                const role = rolesAnswer.role;
+                firstLastName.push(role);
+
+                //manager
+                const managerSql = `SELECT * FROM employee`;
+                db.query(managerSql, (err, data) => {
+                    if (err) throw err;
+
+                    let managers = data.map(({ id, first_name, last_name }) => ({ name: first_name + ' ' + last_name, value: id }));
+
+                    inquirer.prompt([
+                        {
+                            type: 'list',
+                            name: 'manager',
+                            message:   `Who is the employee's manager?`,
+                            choices: managers
+                        }
+                    ]).then(managerAnswer => {
+                        const manager = managerAnswer.manager;
+                        firstLastName.push(manager);
+
+                        const sql = `INSERT INTO employee (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`;
+
+                        db.query(sql, firstLastName, (err, result) => {
+                            if (err) throw err;
+
+                            console.log('Added ' + answer.firstName + ' ' + answer.lastName + ' to the database');
+
+                            prompts();
+                        })
+                    })
+                })
+            })
+        })
+    })
+};
 
 //todo: add update employee role function
 updateRole = () => {
