@@ -53,9 +53,6 @@ const db = mysql.createConnection(
             viewAllRoles();
         } 
         if (choices === 'view all employees') {
-            viewAllRoles();
-        } 
-        if ( choices === 'view all employees') {
             employees();
         }
         if (choices === 'add a department') {
