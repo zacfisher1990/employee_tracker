@@ -86,7 +86,11 @@ departments = () => {
 //view all roles function
 
 viewAllRoles = () => {
-    const sql = `SELECT role.id, role.title, department.name AS department FROM role INNER JOIN department ON role.department_id = department.id`;
+    const sql = `SELECT role.id, role.title, department.name 
+                AS department, role.salary 
+                FROM role 
+                INNER JOIN department 
+                ON role.department_id = department.id`;
 
     db.query(sql, (err, rows) => {
     if (err) throw err;
@@ -118,26 +122,26 @@ employees = () => {
     })
 }
 
-//todo: add add a department
+//Add department
 addDepartment = () => {
     inquirer.prompt([
         {
             type: 'input',
             name: 'addDep',
-            message: 'What is the name of the department?',
-            
+            message: 'What is the name of the department?'
         }
     ]).then(answer => {
         const sql = `INSERT INTO department (name) VALUES (?)`;
             db.query(sql, answer.addDep, (err, result) => {
-            if (err) throw (err);
+            if (err) throw err;
+
             console.log('Added ' + answer.addDep + ' to the database');
             
-            departments();
+            prompts();
         })
     })
+};
 
-}
 //todo: add add role function
 addRole = () => {
     inquirer.prompt([
@@ -150,12 +154,6 @@ addRole = () => {
             type: 'input',
             name: 'salary',
             message: 'What is the salary of the role?',
-        },
-        {
-            type: 'list',
-            name: 'department',
-            message: 'Which department does the role belong to?',
-            choices: ['Engineering', 'Finance', 'Legal', 'Sales', 'Service']
         }
     ]).then(answer => {
         const roleSalary = [answer.role, answer.salary];
@@ -165,12 +163,33 @@ addRole = () => {
             db.query(roleSql, (err, data) => {
             if (err) throw err;
 
-            
+            const dept = data.map(({ name, id }) => ({ name: name, value: id }));
 
+            inquirer.prompt([
+                {
+                type: 'list',
+                name: 'department',
+                message: 'Which department does the role belong to?',
+                choices: dept
+                }
+            ]).then(answerDep => {
+                roleSalary.push(answerDep.department);
+
+                const sql = `INSERT INTO role (title, salary, department_id) VALUES (?, ?, ?)`;
+
+                db.query(sql, roleSalary, (err, result) => {
+                    if (err) throw err;
+                    console.log('Added' + answer.role + ' to roles');
+
+                    viewAllRoles();
+                })
+                
+            })
         })
     })
+};
 
-}
+
 //todo: add add employee function
 
 addEmployee = () => {
@@ -206,13 +225,4 @@ updateRole = () => {
 
 }
 
-
-//default response
-// app.use((req, res) => {
-//     res.status(404).end();
-//   });
-  
-//   app.listen(PORT, () => {
-//     console.log(`Server running on port ${PORT}`);
-//   });
 
