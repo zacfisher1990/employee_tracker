@@ -22,7 +22,7 @@
   This application requires Node.js, Inquirer, mysql2, and console.table.
 
   ## Usage
-  Run npm start to view the menu, make selections, and aswer prompts.
+  Run 'npm start' to view the menu, make selections, and answer prompts.
 
   ## License
   This project is under the ISC license.
