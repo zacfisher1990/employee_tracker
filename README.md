@@ -2,27 +2,29 @@
 
   [![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg)](https://opensource.org/licenses/ISC)
 
-  ## Description
+## Description
   Link to the video here: https://drive.google.com/file/d/1ZDdwHcwxMPkFNbFy-mstL_Itwfc4JHp4/view
 
-
-  This is an SQL project that allows the user to view data and add data to the existing tables.
+  This application allows the user to manage an employee database using node, inquirer, and mysql.
 
   ## Table of Content
-   - [Project Description](#description)
    - [Installation](#installation)
    - [Usage](#usage)
    - [License](#license)
-   - [Contributing](#contributing)
-   - [Tests](#tests)
    - [Questions](#questions)
+
   
+
+
+  This application 
+
+
   
   ## Installation
   This application requires Node.js, Inquirer, mysql2, and console.table.
 
   ## Usage
-  Run 'npm start' to view the menu, make selections, and answer prompts.
+  Run 'npm i && npm start' to view the menu, make selections, and answer prompts to add data to existing tables. 
 
   ## License
   This project is under the ISC license.
